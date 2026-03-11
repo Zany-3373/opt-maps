@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Route Optimization on Google Map</title>
+        <style>
+            body, html {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                overflow-x: hidden;
+            }
+            #map {
+                height: 100vh;
+                width: 100%;
+            }
+            .title-box {
+                position: absolute;
+                bottom: 20px;
+                left: 20px;
+                background-color: rgba(255, 255, 255, 0.8);
+                padding: 15px 25px;
+                border-radius: 10px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                z-index: 10;
+                width: 220px;
+            }
+            .title-box h1 {
+                margin: 0 0 5px 0;
+                font-size: 24px;
+            }
+            .title-box p {
+                margin: 0;
+                color: #555;
+            }
+            .title-box summary {
+                list-style: none;
+                cursor: pointer;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-weight: bold;
+                color: #333;
+                padding: 5px 0;
+            }
+            .title-box summary::-webkit-details-marker {
+                display: none;
+            }
+            .title-box summary::after {
+                content: '';
+                width: 8px;
+                height: 8px;
+                border-bottom: 2px solid #777;
+                border-right: 2px solid #777;
+                transform: rotate(45deg);
+                transition: transform 0.3s ease-in-out;
+                margin-left: 15px;
+            }
+            .title-box details[open] summary::after {
+                transform: rotate(225deg);
+            }
+            .input-panel {
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                background-color: rgba(255, 255, 255, 0.95);
+                padding: 15px;
+                border-radius: 8px;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+                z-index: 10;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                max-width: 300px;
+            }
+            .input-panel div {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;/
+            }
+            .input-panel input {
+                width: 160px;
+                padding: 5px;
+                margin-left: 15px;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+            }
+            .input-panel span {
+                display: inline-block;
+                width: 5em;
+                text-align-last: justify;
+            }
+            .input-panel button {
+                margin-top: 10px;
+                padding: 8px;
+                background-color: #4285F4;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+            }
+            .input-panel button:hover {
+                background-color: #3367D6;
+            }
+            #total-info {
+                display: none;
+                text-align: center;
+                margin-top: 15px;
+                padding-top: 10px;
+                border-top: 1px solid #ccc;
+                font-size: 15px;
+                font-weight: bold;
+                color: #d32f2f;
+                text-align: center;
+            }
+            #add-waypoint-btn {
+                margin: 5px 0 10px 0;
+                padding: 5px;
+                background-color: #f1f3f4;
+                color: #3c4043;
+                border: 1px solid #dadce0;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 13px;
+            }
+            #add-waypoint-btn:hover {
+                background-color: #e8eaed;
+            }
+            #waypoints-container {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                max-height: 150px;
+                overflow-y: auto;
+                padding-right: 5px;
+            }
+            #optimized-container {
+                display: none;
+                margin-top: 15px;
+                padding-top: 15px;
+                border-top: 1px dashed #ccc;
+            }
+            #optimized-title {
+                display: block;
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #1a73e8;
+                text-align: left;
+            }
+            #optimized-list {
+                display: block;
+                max-height: 150px;
+                overflow-y: auto;
+                overflow-x: auto;
+                white-space: nowrap;
+                margin: 0;
+                padding-left: 25px;
+                padding-right: 5px;
+                font-size: 14px;
+                color: #333;
+            }
+            #optimized-list li {
+                margin-bottom: 5px;
+                text-align: left;
+            }
+            .route-list-title {
+                font-weight: bold;
+                margin-bottom: 8px;
+                color: #1a73e8;
+            }
+            .route-list {
+                margin: 0;
+                padding-left: 25px;
+            }
+            .route-list li {
+                margin-bottom: 5px;
+            }
+            #input-panel {
+                transition: transform 0.3s ease-in-out; 
+            }
+            .panel-hidden {
+                transform: translateX(calc(100% + 20px)); 
+            }
+            #toggle-panel-btn {
+                position: absolute;
+                top: 20px;
+                left: -35px;
+                width: 35px;
+                height: 40px;
+                background-color: rgba(255, 255, 255, 0.95);
+                border: none;
+                border-radius: 8px 0 0 8px;
+                box-shadow: -3px 2px 5px rgba(0, 0, 0, 0.1);
+                cursor: pointer;
+                font-size: 16px;
+                color: #555;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+            }
+            #toggle-panel-btn:hover {
+                background-color: #f1f3f4;
+            }
+            #clear-btn {
+                margin-top: 5px;
+                padding: 5px 30px;
+                background-color: #f1f3f4;
+                color: #d32f2f;
+                border: 1px solid #dadce0;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 13px;
+                align-self: center;
+            }
+            #clear-btn:hover {
+                background-color: #fce8e6;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="title-box">
+            <h1>Route Optimizer</h1>
+            <details>
+                <summary>本ツールの概要</summary>
+                <p>・複数の経由地を最も効率的に巡るルートを提示します。<br>
+                    ・地点は出発地と目的地を含む25地点まで追加できます。<br>
+                    ・本ツールは主に国内用に開発されています。
+                </p>
+            </details>
+            
+        </div>
+
+        <div class="input-panel" id="input-panel">
+            <button id="toggle-panel-btn">▶</button>
+            <div><span>出発地</span>： <input type="text" id="origin" placeholder="出発地を入力"></div>
+            <div id="waypoints-container">
+                <div><span>経由地１</span>： <input type="text" id="waypoint1" class="waypoint-input" placeholder="経由地を入力"></div>
+            </div>
+            
+            <button id="add-waypoint-btn" type="button">経由地を追加</button>
+
+            <div><span>目的地</span>： <input type="text" id="destination" placeholder="目的地を入力"></div>
+            <button id="search-btn">ルートを最適化して検索</button>
+            <button id="clear-btn" type="button">すべてクリア</button>
+            <div id="optimized-container">
+                <div id="optimized-title"></div>
+                <ol id="optimized-list"></ol>
+            </div>
+            <div id="total-info"></div>
+        </div>
+
+        <div id="map"></div>
+
+        <script>
+            const MAX_WAYPOINTS = 23;
+            let currentWaypointCount = 1;
+
+            function initMap() {
+                const centerLocation = {lat: 38.2601, lng: 140.8824};
+                const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: centerLocation,
+                });
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        function(position) {
+                            const currentPos = {
+                                lat: position.coords.latitude,
+                                lng: position.coords.longitude,
+                            };
+                            map.setCenter(currentPos);
+                        },
+                        function(error) {
+                            console.log("位置情報の取得に失敗したか、許可されませんでした。");
+                        }
+                    );
+                } else {
+                    console.log("お使いの端末・ブラウザは位置情報に対応していません。");
+                }
+
+                const directionsService = new google.maps.DirectionsService();
+                const directionsRenderer = new google.maps.DirectionsRenderer();
+                directionsRenderer.setMap(map);
+                const options = { componentRestrictions: { country: "jp" } };
+                new google.maps.places.Autocomplete(document.getElementById("origin"), options);
+                new google.maps.places.Autocomplete(document.getElementById("waypoint1"), options);
+                new google.maps.places.Autocomplete(document.getElementById("destination"), options);
+
+                document.getElementById("search-btn").addEventListener("click", function() {
+                    document.getElementById("total-info").style.display = "block";
+                    document.getElementById("optimized-container").style.display = "none";
+                    document.getElementById("total-info").innerHTML = `
+                        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 10px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="48" height="48" fill="#d94bec">
+                                <circle cx="12" cy="12" r="12" opacity=".5">
+                                    <animate attributeName="r" values="0;12;0" keySplines="0.42 0.0 0.58 1.0" dur="2s" repeatCount="indefinite" begin="0"/>
+                                </circle>
+                                <circle cx="12" cy="12" r="0" opacity=".5">
+                                    <animate attributeName="r" values="0;12;0" keySplines="0.42 0.0 0.58 1.0" dur="2s" repeatCount="indefinite" begin="1s"/>
+                                </circle>
+                            </svg>
+                            <div style="color: #d94bec; font-size: 16px; margin-top: 5px;">計算中</div>
+                        </div>
+                    `;
+                    calculateAndDisplayRoute(directionsService, directionsRenderer);
+                });
+                
+                document.getElementById("add-waypoint-btn").addEventListener("click", function() {
+                    if (currentWaypointCount < MAX_WAYPOINTS) {
+                        currentWaypointCount++;
+                    
+                        const newDiv = document.createElement("div");
+                    
+                        const fullWidthNum = currentWaypointCount.toString().replace(/[0-9]/g, function(s) {
+                            return String.fromCharCode(s.charCodeAt(0) + 65248);
+                        });
+                        newDiv.innerHTML = `<span>経由地${fullWidthNum}</span>：<input type="text" class="waypoint-input" placeholder="経由地を追加">`;
+                    
+                        document.getElementById("waypoints-container").appendChild(newDiv);
+
+                        const newInput = newDiv.querySelector(".waypoint-input");
+                        new google.maps.places.Autocomplete(newInput, { componentRestrictions: { country: "jp" } });
+
+                        if (currentWaypointCount === MAX_WAYPOINTS) {
+                        this.style.display = "none";
+                        }
+                    }
+                });
+
+                document.getElementById("toggle-panel-btn").addEventListener("click", function() {
+                    const panel = document.getElementById("input-panel");
+                    panel.classList.toggle("panel-hidden");
+                    if (panel.classList.contains("panel-hidden")) {
+                        this.innerHTML = "◀";
+                    } else {
+                        this.innerHTML = "▶";
+                    }
+                });
+
+                document.getElementById("clear-btn").addEventListener("click", function() {
+                    
+                    document.getElementById("origin").value = "";
+                    document.getElementById("destination").value = "";
+                    document.getElementById("waypoint1").value = "";
+
+                    const container = document.getElementById("waypoints-container");
+                    while (container.children.length > 1) {
+                        container.removeChild(container.lastChild);
+                    }
+
+                    currentWaypointCount = 1;
+                    document.getElementById("add-waypoint-btn").style.display = "block";
+
+                    document.getElementById("total-info").style.display = "none";
+                    document.getElementById("total-info").innerHTML = "";
+                    document.getElementById("optimized-container").style.display = "none";
+                    document.getElementById("optimized-title").innerHTML = "";
+                    document.getElementById("optimized-list").innerHTML = "";
+
+                    directionsRenderer.setMap(null);
+                    directionsRenderer.setMap(map);
+                });
+            } 
+
+
+            function calculateAndDisplayRoute(directionsService, directionsRenderer) {
+                const origin = document.getElementById("origin").value;
+                const destination = document.getElementById("destination").value;
+            
+                const waypoints = [];
+                const inputs = document.querySelectorAll(".waypoint-input");
+
+                inputs.forEach(function(input) {
+                    if (input.value !== "") {
+                        waypoints.push({ location: input.value, stopover: true });
+                    }
+                });
+
+                directionsService.route({
+                    origin: origin,
+                    destination: destination,
+                    waypoints: waypoints,
+                    optimizeWaypoints: true,
+                    travelMode: google.maps.TravelMode.DRIVING,
+                }, function(result, status) {
+                    if (status === "OK") {
+                        directionsRenderer.setDirections(result);
+
+                        document.getElementById("optimized-container").style.display = "block";
+
+                        const route = result.routes[0];
+                        let totalDistance = 0;
+                        let totalDuration = 0;
+
+                        for (let i = 0; i < route.legs.length; i++) {
+                        totalDistance += route.legs[i].distance.value;
+                        totalDuration += route.legs[i].duration.value;
+                        }
+
+                        const distanceKm = (totalDistance / 1000).toFixed(1);
+
+                        const hours = Math.floor(totalDuration / 3600);
+                        const minutes = Math.floor((totalDuration % 3600) / 60);
+                    
+                        let timeText = "";
+                        if (hours > 0) {
+                            timeText = hours + "時間 " + minutes + "分";
+                        } else {
+                            timeText = minutes + "分";
+                        }
+
+                        function cleanPlaceName(name) {
+                            if (name.includes(" ")) {
+                                const spaceIndex = name.indexOf(" ");
+                                return name.substring(spaceIndex + 1);
+                            } else {
+                                return name.replace(/^日本、\s*/, '');
+                            }
+                        }
+
+                        document.getElementById("optimized-title").innerHTML = "最適化された訪問順序：";
+                    
+                        const order = result.routes[0].waypoint_order;
+                        let listHTML = "<li><strong>【出発】</strong> " + cleanPlaceName(origin) + "</li>";
+                        
+                        for (let i = 0; i < order.length; i++) {
+                            const originalIndex = order[i];
+                            const waypointName = waypoints[originalIndex].location;
+                            listHTML += "<li><strong>【経由】</strong> " + cleanPlaceName(waypointName) + "</li>";
+                        }
+                        
+                        listHTML += "<li><strong>【到着】</strong> " + cleanPlaceName(destination) + "</li>";
+
+                        document.getElementById("optimized-list").innerHTML = listHTML;
+
+                        document.getElementById("total-info").innerHTML = 
+                            "合計距離: " + distanceKm + " km<br>所要時間: 約" + timeText;
+
+                    } else {
+                        document.getElementById("total-info").style.display = "none";
+                        document.getElementById("optimized-container").style.display = "none";
+                        window.alert("ルート検索に失敗しました。地名が正しいか確認してください。（エラー: " + status + "）");
+                    }
+                });
+            }
+        </script>
+        <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtCRe3UfTIKX_A_Jh_iNpde7Ys9iyesWU&callback=initMap&libraries=places"></script>
+    </body>
+</html>
