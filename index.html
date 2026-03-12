@@ -239,6 +239,22 @@
             #clear-btn:hover {
                 background-color: #fce8e6;
             }
+            #open-gmaps-btn {
+                display: none;
+                margin-top: 15px;
+                width: 100%;
+                padding: 12px;
+                background-color: #34a853;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 16px;
+            }
+            #open-gmaps-btn:hover {
+                background-color: #2b8c46;
+            }
             @media (max-width: 600px) {
                 .input-panel {
                     top: 10px;
@@ -287,6 +303,7 @@
             <div id="optimized-container">
                 <div id="optimized-title"></div>
                 <ol id="optimized-list"></ol>
+                <button id="open-gmaps-btn" type="button">Googleマップでナビを開始</button>
             </div>
             <div id="total-info"></div>
         </div>
@@ -412,6 +429,7 @@
                     document.getElementById("optimized-container").style.display = "none";
                     document.getElementById("optimized-title").innerHTML = "";
                     document.getElementById("optimized-list").innerHTML = "";
+                    document.getElementById("open-gmaps-btn").style.display = "none";
 
                     directionsRenderer.setMap(null);
                 });
@@ -493,6 +511,26 @@
                         document.getElementById("total-info").innerHTML = 
                             "合計距離: " + distanceKm + " km<br>所要時間: 約" + timeText;
 
+                        let gmapsUrl = "https://www.google.com/maps/dir/?api=1&travelmode=driving";
+                        
+                        gmapsUrl += "&origin=" + encodeURIComponent(origin);
+                        gmapsUrl += "&destination=" + encodeURIComponent(destination);
+
+                        if (order.length > 0) {
+                            let optimizedWaypoints = [];
+                            for (let i = 0; i < order.length; i++) {
+                                const originalIndex = order[i];
+                                optimizedWaypoints.push(encodeURIComponent(waypoints[originalIndex].location));
+                            }
+                            gmapsUrl += "&waypoints=" + optimizedWaypoints.join("%7C");
+                        }
+
+                        const gmapsBtn = document.getElementById("open-gmaps-btn");
+                        gmapsBtn.style.display = "block";
+                        gmapsBtn.onclick = function() {
+                            window.open(gmapsUrl, "_blank");
+                        };
+
                     } else {
                         document.getElementById("total-info").style.display = "none";
                         document.getElementById("optimized-container").style.display = "none";
@@ -508,6 +546,7 @@
     </body>
 
 </html>
+
 
 
 
