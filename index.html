@@ -304,6 +304,18 @@
                 gestureHandling: "greedy",
                 });
 
+                map.addListener('dragstart', function() {
+                    if (window.innerWidth <= 600) {
+                        document.querySelector('.title-box').classList.add('minimized');
+                    }
+                });
+
+                map.addListener('zoom_changed', function() {
+                    if (window.innerWidth <= 600) {
+                        document.querySelector('.title-box').classList.add('minimized');
+                    }
+                });
+
                 if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
                         function(position) {
@@ -494,6 +506,7 @@
     </body>
 
 </html>
+
 
 
 
