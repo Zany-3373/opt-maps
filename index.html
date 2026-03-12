@@ -357,7 +357,7 @@
                             <div style="color: #d94bec; font-size: 16px; margin-top: 5px;">計算中</div>
                         </div>
                     `;
-                    calculateAndDisplayRoute(directionsService, directionsRenderer);
+                    calculateAndDisplayRoute(directionsService, directionsRenderer, map);
                 });
                 
                 document.getElementById("add-waypoint-btn").addEventListener("click", function() {
@@ -417,7 +417,7 @@
             } 
 
 
-            function calculateAndDisplayRoute(directionsService, directionsRenderer) {
+            function calculateAndDisplayRoute(directionsService, directionsRenderer, map) {
                 const origin = document.getElementById("origin").value;
                 const destination = document.getElementById("destination").value;
             
@@ -507,6 +507,7 @@
     </body>
 
 </html>
+
 
 
 
