@@ -30,10 +30,12 @@
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
                 z-index: 10;
                 width: 220px;
+                transition: all 0.3s ease-in-out;
             }
             .title-box h1 {
                 margin: 0 0 5px 0;
                 font-size: 24px;
+                cursor: pointer;
             }
             .title-box p {
                 margin: 0;
@@ -64,6 +66,18 @@
             }
             .title-box details[open] summary::after {
                 transform: rotate(225deg);
+            }
+            .title-box.minimized {
+                padding: 5px 12px;
+                opacity: 0.6;
+                width: fit-content;
+            }
+            .title-box.minimized details {
+                display: none;
+            }
+            .title-box.minimized h1 {
+                font-size: 16px;
+                margin-bottom: 0;
             }
             .input-panel {
                 position: absolute;
@@ -472,11 +486,15 @@
                     }
                 });
             }
+            document.querySelector('.title-box h1').addEventListener('click', function() {
+                document.querySelector('.title-box').classList.toggle('minimized');
+            });
         </script>
         <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAtCRe3UfTIKX_A_Jh_iNpde7Ys9iyesWU&callback=initMap&libraries=places"></script>
     </body>
 
 </html>
+
 
 
 
