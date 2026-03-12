@@ -92,8 +92,6 @@
                 flex-direction: column;
                 gap: 8px;
                 max-width: 300px;
-                max-height: calc(100vh - 50px);
-                overflow-y: auto;
             }
             .input-panel div {
                 display: flex;
@@ -125,6 +123,17 @@
             }
             .input-panel button:hover {
                 background-color: #3367D6;
+            }
+            .scroll-area {
+                display: flex !important;
+                flex-direction: column;
+                align-items: stretch !important;
+                justify-content: flex-start !important;
+                gap: 8px;
+                max-height: calc(100vh - 60px);
+                overflow-y: auto;
+                overflow-x: hidden;
+                padding-right: 5px;
             }
             #total-info {
                 display: none;
@@ -292,7 +301,9 @@
 
         <div class="input-panel" id="input-panel">
             <button id="toggle-panel-btn">▶</button>
-            <div><span>出発地</span>： <input type="text" id="origin" placeholder="出発地を入力"></div>
+            <div class="scroll-area">
+                <div><span>出発地</span>： <input type="text" id="origin" placeholder="出発地を入力"></div>
+            </div>
             <div id="waypoints-container">
                 <div><span>経由地１</span>： <input type="text" id="waypoint1" class="waypoint-input" placeholder="経由地を入力"></div>
             </div>
@@ -548,6 +559,7 @@
     </body>
 
 </html>
+
 
 
 
