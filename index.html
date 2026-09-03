@@ -288,6 +288,22 @@
             #clear-btn:hover {
                 background-color: #fce8e6;
             }
+            #copy-route-btn {
+                display: block;
+                margin-top: 10px;
+                width: 100%;
+                padding: 10px;
+                background-color: #f1f3f4;
+                color: #3c4043;
+                border: 1px solid #dadce0;
+                border-radius: 4px;
+                cursor: pointer;
+                font-weight: bold;
+                font-size: 14px;
+            }
+            #copy-route-btn:hover {
+                background-color: #e8eaed;
+            }
             #open-gmaps-btn {
                 display: none;
                 margin-top: 15px;
@@ -363,6 +379,9 @@
                 <div id="optimized-container">
                     <div id="optimized-title"></div>
                     <ol id="optimized-list"></ol>
+
+                    <button id="copy-route-btn" type="button">結果をコピー</button>
+                    
                     <button id="open-gmaps-btn" type="button">Googleマップでナビを開始</button>
                 </div>
                 <div id="total-info"></div>
@@ -493,6 +512,35 @@
                     document.getElementById("open-gmaps-btn").style.display = "none";
 
                     directionsRenderer.setMap(null);
+                });
+
+                document.getElementById("copy-route-btn").addEventListener("click", function() {
+                    const listItems = document.querySelectorAll("#optimized-list li");
+                    if (listItems.length === 0) return;
+
+                    let textToCopy = "最適化ルート\n";
+                    listItems.forEach(function(item) {
+                        textToCopy += item.innerText + "\n";
+                    });
+
+                    navigator.clipboard.writeText(textToCopy).then(function() {
+                        const btn = document.getElementById("copy-route-btn");
+                        const originalText = btn.innerHTML;
+                        
+                        btn.innerHTML = "✅ コピーしました！";
+                        btn.style.backgroundColor = "#e6f4ea";
+                        btn.style.color = "#1e8e3e";
+                        btn.style.borderColor = "#1e8e3e";
+
+                        setTimeout(function() {
+                            btn.innerHTML = originalText;
+                            btn.style.backgroundColor = "";
+                            btn.style.color = "";
+                            btn.style.borderColor = "";
+                        }, 2000);
+                    }).catch(function(err) {
+                        alert("❗️ コピーに失敗しました。");
+                    });
                 });
             } 
 
