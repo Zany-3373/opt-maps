@@ -289,15 +289,19 @@
                 background-color: #fce8e6;
             }
             #optimized-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: center !important;
+                flex-direction: row !important;
                 margin-bottom: 8px;
+                width: 100%;
             }
             #optimized-title {
+                display: inline-block !important;
                 font-weight: bold;
                 color: #1a73e8;
-                margin-bottom: 0;
+                margin-bottom: 0 !important;
+                width: auto !important;
             }
             #copy-icon-btn {
                 background: none;
@@ -305,6 +309,7 @@
                 color: #555;
                 cursor: pointer;
                 padding: 6px;
+                margin: 0 !important;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
